@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Track, filter, and share the latest Google Cloud BigQuery release notes. Easily compose and post updates to X or a local simulated feed.">
+    <title>BigQuery Release Notes Hub & Broadcaster</title>
+    
+    <!-- Google Fonts: Outfit (headings) & Inter (body) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Link to custom stylesheet -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="app-container">
+        
+        <!-- HEADER -->
+        <header class="app-header">
+            <div class="header-logo-title">
+                <div class="logo-icon">⚡</div>
+                <div>
+                    <h1 id="app-main-title">BigQuery Release Notes</h1>
+                    <p class="tagline">Stay updated with Google Cloud BigQuery features and broadcast them seamlessly</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <div class="last-updated-container">
+                    <span class="dot blinking"></span>
+                    <span id="last-updated-text">Syncing...</span>
+                </div>
+                <button id="refresh-btn" class="btn btn-primary" title="Refresh Release Notes">
+                    <svg id="refresh-spinner" class="spinner-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+                    </svg>
+                    <span>Refresh Feed</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- MAIN LAYOUT -->
+        <main class="app-main">
+            
+            <!-- LEFT SECTION: FEED AND FILTERS -->
+            <section class="feed-section">
+                <!-- Search & Filters Container -->
+                <div class="controls-card">
+                    <div class="search-box">
+                        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                        <input type="text" id="search-input" placeholder="Search update details, features or keywords..." autocomplete="off">
+                    </div>
+                    
+                    <div class="filters-container">
+                        <span class="filter-label">Filter by:</span>
+                        <div class="filter-tags" id="filter-tags-list">
+                            <button class="filter-tag active" data-type="all" id="filter-all">All Updates</button>
+                            <button class="filter-tag" data-type="Feature" id="filter-features">Features</button>
+                            <button class="filter-tag" data-type="Deprecated" id="filter-deprecations">Deprecations</button>
+                            <button class="filter-tag" data-type="Changed" id="filter-changes">Changes</button>
+                            <button class="filter-tag" data-type="General" id="filter-general">General</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Release Notes Cards Feed -->
+                <div class="release-feed" id="release-feed-container">
+                    <!-- Cards will be dynamically inserted here by JS -->
+                    <div class="loading-state" id="feed-loading-state">
+                        <div class="pulse-loader"></div>
+                        <p>Fetching the latest BigQuery release notes...</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- RIGHT SECTION: MOCK TWITTER TIMELINE -->
+            <aside class="sidebar-section">
+                <div class="sidebar-card">
+                    <div class="sidebar-header">
+                        <div class="sidebar-title-row">
+                            <span class="twitter-bird">🐦</span>
+                            <h2>Mock Tweet Feed</h2>
+                        </div>
+                        <p class="sidebar-desc">Simulated feed of updates you've decided to broadcast</p>
+                    </div>
+                    <div class="mock-timeline" id="mock-timeline-container">
+                        <!-- Simulated tweets will be rendered here -->
+                        <div class="timeline-empty-state" id="timeline-empty-message">
+                            <div class="empty-bird">🕊️</div>
+                            <p>No simulated broadcasts yet.</p>
+                            <p class="sub-text">Click the <strong>Tweet</strong> button on any release card above to compose a post!</p>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+            
+        </main>
+        
+        <!-- FOOTER -->
+        <footer class="app-footer">
+            <p>&copy; 2026 BigQuery Release Notes Broadcaster. Built with Flask & Vanilla CSS/JS.</p>
+        </footer>
+    </div>
+
+    <!-- TWEET COMPOSER MODAL (GLASSMORPHIC OVERLAY) -->
+    <div class="modal-overlay" id="tweet-modal" style="display: none;">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Compose Update Tweet</h3>
+                <button class="close-btn" id="close-modal-btn" title="Close Composer">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="note-ref-card">
+                    <span class="badge" id="modal-badge-type">Feature</span>
+                    <span class="date" id="modal-badge-date">June 15, 2026</span>
+                    <p id="modal-note-preview" class="preview-text">Note snippet content...</p>
+                </div>
+                
+                <div class="composer-area">
+                    <label for="tweet-textarea">Post Content</label>
+                    <textarea id="tweet-textarea" rows="5" maxlength="280" placeholder="What is happening?"></textarea>
+                    
+                    <div class="composer-footer">
+                        <div class="hashtag-helpers">
+                            <button class="tag-helper" data-tag="#BigQuery">#BigQuery</button>
+                            <button class="tag-helper" data-tag="#GoogleCloud">#GoogleCloud</button>
+                            <button class="tag-helper" data-tag="#GCP">#GCP</button>
+                            <button class="tag-helper" data-tag="#DataAnalytics">#DataAnalytics</button>
+                        </div>
+                        <div class="char-count-wrapper">
+                            <span id="char-count-text">280</span>
+                            <svg class="char-progress-svg" width="30" height="30">
+                                <circle cx="15" cy="15" r="12" class="progress-bg"></circle>
+                                <circle cx="15" cy="15" r="12" class="progress-bar" id="char-progress-circle"></circle>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="modal-cancel-btn">Cancel</button>
+                <div class="action-buttons-group">
+                    <button class="btn btn-accent-dark" id="modal-mock-post-btn">
+                        <span>Post to Mock Feed</span>
+                    </button>
+                    <button class="btn btn-primary" id="modal-real-tweet-btn">
+                        <span class="twitter-icon-btn">🐦</span>
+                        <span>Post on X</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script loading -->
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
